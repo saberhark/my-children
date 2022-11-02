@@ -41,3 +41,4 @@ while not loc:
 
 time.sleep(1)
 pyautogui.click(loc)
+
