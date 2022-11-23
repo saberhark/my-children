@@ -1,8 +1,7 @@
 import sys
-#from PyQt5.QtWidgets import QApplication, QWidget
-
 import pyautogui
 import time
+from macro_utils import *
 
 global path
 path = './new_age/'
@@ -23,28 +22,6 @@ def real_time_pvp():
         if end_realtime:
             pyautogui.click((378, 517))
             time.sleep(2)
-
-
-# 이미지 찾을 때까지 찾은 후 좌표 반환
-def find_img(img_path, confidence=0.9, reverse=False):
-    while True:
-        find_arr = [i for i in pyautogui.locateAllOnScreen(img_path, confidence=confidence)]
-        if len(find_arr) > 0:
-            if reverse:
-                return find_arr[::-1]
-            else:
-                return find_arr
-        time.sleep(1)
-
-
-
-def click_img(img_path, confidence=0.9):
-    while True:
-        find_arr = pyautogui.locateOnScreen(img_path, confidence=confidence)
-        if find_arr:
-            return find_arr
-        time.sleep(1)
-
 
 def one_pvp(total=10, skip=0, next=False, three_total=10, three_skip=0):
     print("1:1 시작")

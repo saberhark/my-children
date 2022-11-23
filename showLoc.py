@@ -3,12 +3,3 @@
 """
 
 
-import time
-import mouse
-import pyautogui
-
-
-while True:
-    print(mouse.get_position())
-    time.sleep(0.1)
-
