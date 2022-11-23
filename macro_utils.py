@@ -14,7 +14,6 @@ def find_img(img_path, confidence=0.9, reverse=False):
         time.sleep(1)
 
 
-
 def click_img(img_path, confidence=0.9):
     while True:
         find_arr = pyautogui.locateOnScreen(img_path, confidence=confidence)
