@@ -8,20 +8,24 @@ path = './new_age/'
 
 
 def real_time_pvp():
+    print("실시간 대전 시작")
+    cnt = 1;
     while True:
-        realtime_pvp = pyautogui.locateOnScreen(path + 'realtime_pvp.png', confidence=0.80)
-        ai_auto = pyautogui.locateOnScreen(path + 'ai_auto.png', confidence=0.80)
-        end_realtime = pyautogui.locateOnScreen(path + 'end_realtime.png', confidence=0.80)
+        print("반복 횟수 >>", cnt);
+        print("realtime_pvp")
+        pyautogui.click(find_img(path + 'realtime_pvp.png')[0])
 
-        if realtime_pvp:
-            pyautogui.click(realtime_pvp)
-            time.sleep(2)
-        if ai_auto:
-            pyautogui.click(ai_auto)
-            time.sleep(2)
-        if end_realtime:
+        # ai 전투
+        print('ai_auto')
+        if len(find_img(path + 'ai_auto.png')) > 0:
+            pyautogui.click((119, 353))
+
+        # 전투 종료
+        print('end_realtime')
+        if len(find_img(path + 'end_realtime.png')) > 0:
             pyautogui.click((378, 517))
-            time.sleep(2)
+        cnt = cnt+1
+
 
 def one_pvp(total=10, skip=0, next=False, three_total=10, three_skip=0):
     print("1:1 시작")
@@ -39,6 +43,7 @@ def one_pvp(total=10, skip=0, next=False, three_total=10, three_skip=0):
         if len(find_img(path + 'one_pvp_end.png')) > 0:
             pyautogui.click((487, 577))
             total = total -1
+
     # 33 대전 실행
     if next:
         if len(find_img(path+'one_pvp_wait.png')) > 0:
@@ -78,7 +83,3 @@ def capsule():
             pyautogui.click(end_btn)
             time.sleep(10)
             pyautogui.click((481, 638))
-
-
-
-one_pvp(total=0, next=True, three_total=5)
