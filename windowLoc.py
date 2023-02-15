@@ -35,9 +35,10 @@ def window_locate():
 loc = None
 while not loc:
     try:
-        loc = pyautogui.locateOnScreen('img/7.png', confidence=0.80, region = window_locate())
+        loc = pyautogui.locateOnScreen('rearise/7.png', confidence=0.80, region = window_locate())
     except:
         print("좌표 제대로")
 
 time.sleep(1)
 pyautogui.click(loc)
+
