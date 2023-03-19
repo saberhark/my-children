@@ -4,6 +4,7 @@ import pyautogui
 
 # 이미지 찾을 때까지 찾은 후 좌표 반환
 def find_img(img_path, confidence=0.9, reverse=False):
+    print("searching file >>", img_path)
     while True:
         find_arr = [i for i in pyautogui.locateAllOnScreen(img_path, confidence=confidence)]
         if len(find_arr) > 0:
