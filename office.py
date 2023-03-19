@@ -42,4 +42,4 @@ def auto_check_out(hours=0, mins=0, secs=0):
 
 # 현재 마우스 좌표
 # print(pyautogui.position())
-auto_check_out(hours=3, mins=5, secs=0)
+auto_check_out(hours=1, mins=33, secs=0)
