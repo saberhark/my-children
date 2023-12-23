@@ -17,9 +17,8 @@ def data_count(path):
     return label_dict
 
 
-def cover_object_and_adjust_labels(image, label_data, cover_ratio=0.5):
+def cover_object_and_adjust_labels(image, label_data, cover_ratio=0.3):
     w, h = image.size
-    adjusted_labels = []
 
     for label in label_data:
         parts = label.strip().split()
@@ -33,31 +32,21 @@ def cover_object_and_adjust_labels(image, label_data, cover_ratio=0.5):
         cover_width = int(width * w * cover_ratio)
         cover_height = int(height * h * cover_ratio)
 
+        cover_y_range = int(height * h * 0.10)  # 객체 높이의 15%
+        cover_y = random.randint(y_max - cover_height - cover_y_range, y_max - cover_height)
         cover_x = random.randint(x_min, x_max - cover_width)
-        cover_y = random.randint(y_min, y_max - cover_height)
 
-        new_x_min = max(x_min, cover_x + cover_width)
-        new_y_min = max(y_min, cover_y + cover_height)
-        new_x_max = min(x_max, cover_x)
-        new_y_max = min(y_max, cover_y)
+        # 이미지에 커버 노이즈 적용
+        cover = Image.new('L', (cover_width, cover_height), 'black')
+        image.paste(cover, (cover_x, cover_y))
 
-        if new_x_min < new_x_max and new_y_min < new_y_max:
-            new_x_center = ((new_x_min + new_x_max) / 2) / w
-            new_y_center = ((new_y_min + new_y_max) / 2) / h
-            new_width = (new_x_max - new_x_min) / w
-            new_height = (new_y_max - new_y_min) / h
+    return image, label_data  # 라벨 데이터는 변경 없이 반환
 
-            adjusted_label = f"{class_id} {new_x_center} {new_y_center} {new_width} {new_height}\n"
-            adjusted_labels.append(adjusted_label)
 
-    cover = Image.new('L', (cover_width, cover_height), 'black')
-    image.paste(cover, (cover_x, cover_y))
-
-    return image, adjusted_labels
 
 
 # 이미지 증강
-def augment_and_save(image_path, label_path, output_image_folder, output_label_folder, is_mirror, is_noisy):
+def augment_and_save(image_path, label_path, output_image_folder, output_label_folder, is_mirror, is_noisy, ratio=0.3):
     # 이미지 불러오기 및 그레이스케일 변환
     image = Image.open(image_path).convert('L')
     label_data = open(label_path, 'r').readlines()
@@ -72,8 +61,8 @@ def augment_and_save(image_path, label_path, output_image_folder, output_label_f
 
     # 잘림 및 가림 적용
     if is_noisy:
-        suffix += '_noisy'
-        image, label_data = cover_object_and_adjust_labels(image, label_data)
+        suffix += '_noisy_'+ str(ratio)
+        image, label_data = cover_object_and_adjust_labels(image, label_data, ratio)
 
     # 이미지 및 라벨 저장
     # 변경된 이미지 및 라벨 저장
@@ -117,8 +106,10 @@ if __name__ == '__main__':
             augment_and_save(image_path, label_path, output_image_folder, output_label_folder, True, False)
 
             # 선택적으로 노이즈 적용
-            if random.random() > 0.2:
-                augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.3)
+            #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.3)
+            #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.4)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.5)
 
     # 8:2 비율로 train, val 분리
     images = [f for f in os.listdir(output_image_folder) if f.endswith('.jpg')]
