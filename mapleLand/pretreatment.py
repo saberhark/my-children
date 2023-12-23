@@ -17,6 +17,45 @@ def data_count(path):
     return label_dict
 
 
+def cover_object_and_adjust_labels(image, label_data, cover_ratio=0.5):
+    w, h = image.size
+    adjusted_labels = []
+
+    for label in label_data:
+        parts = label.strip().split()
+        class_id, x_center, y_center, width, height = map(float, parts)
+
+        x_min = int((x_center - width / 2) * w)
+        y_min = int((y_center - height / 2) * h)
+        x_max = int((x_center + width / 2) * w)
+        y_max = int((y_center + height / 2) * h)
+
+        cover_width = int(width * w * cover_ratio)
+        cover_height = int(height * h * cover_ratio)
+
+        cover_x = random.randint(x_min, x_max - cover_width)
+        cover_y = random.randint(y_min, y_max - cover_height)
+
+        new_x_min = max(x_min, cover_x + cover_width)
+        new_y_min = max(y_min, cover_y + cover_height)
+        new_x_max = min(x_max, cover_x)
+        new_y_max = min(y_max, cover_y)
+
+        if new_x_min < new_x_max and new_y_min < new_y_max:
+            new_x_center = ((new_x_min + new_x_max) / 2) / w
+            new_y_center = ((new_y_min + new_y_max) / 2) / h
+            new_width = (new_x_max - new_x_min) / w
+            new_height = (new_y_max - new_y_min) / h
+
+            adjusted_label = f"{class_id} {new_x_center} {new_y_center} {new_width} {new_height}\n"
+            adjusted_labels.append(adjusted_label)
+
+    cover = Image.new('L', (cover_width, cover_height), 'black')
+    image.paste(cover, (cover_x, cover_y))
+
+    return image, adjusted_labels
+
+
 # 이미지 증강
 def augment_and_save(image_path, label_path, output_image_folder, output_label_folder, is_mirror, is_noisy):
     # 이미지 불러오기 및 그레이스케일 변환
@@ -34,7 +73,7 @@ def augment_and_save(image_path, label_path, output_image_folder, output_label_f
     # 잘림 및 가림 적용
     if is_noisy:
         suffix += '_noisy'
-        image, label_data = crop_and_cover(image, label_data)
+        image, label_data = cover_object_and_adjust_labels(image, label_data)
 
     # 이미지 및 라벨 저장
     # 변경된 이미지 및 라벨 저장
@@ -57,68 +96,6 @@ def mirror_label(label_data):
         mirrored_labels.append(f"{parts[0]} {x_center} {parts[2]} {parts[3]} {parts[4]}\n")
     return mirrored_labels
 
-
-def adjust_labels_for_crop_and_cover(labels, crop_x, crop_y, w, h, is_crop, is_cover):
-    adjusted_labels = []
-    for label in labels:
-        parts = label.strip().split()
-        class_id, x_center, y_center, width, height = map(float, parts)
-
-        # YOLO 형식의 라벨을 이미지 좌표로 변환
-        x_min = (x_center - width / 2) * w
-        y_min = (y_center - height / 2) * h
-        x_max = (x_center + width / 2) * w
-        y_max = (y_center + height / 2) * h
-
-        if is_crop:
-            # 이미지가 잘릴 경우 라벨 조정
-            x_min = max(x_min - crop_x, 0)
-            y_min = max(y_min - crop_y, 0)
-            x_max = min(x_max - crop_x, w - 2 * crop_x)
-            y_max = min(y_max - crop_y, h - 2 * crop_y)
-            new_w, new_h = w - 2 * crop_x, h - 2 * crop_y
-        elif is_cover:
-            # 이미지에 가림이 적용될 경우 라벨 조정
-            cover_x, cover_y = random.randint(0, w - crop_x), random.randint(0, h - crop_y)
-            if cover_x < x_min < cover_x + crop_x or cover_x < x_max < cover_x + crop_x:
-                x_min, x_max = max(x_min, cover_x + crop_x), min(x_max, cover_x)
-            if cover_y < y_min < cover_y + crop_y or cover_y < y_max < cover_y + crop_y:
-                y_min, y_max = max(y_min, cover_y + crop_y), min(y_max, cover_y)
-            new_w, new_h = w, h
-
-        # 조정된 좌표를 다시 YOLO 형식으로 변환
-        x_center = ((x_min + x_max) / 2) / new_w
-        y_center = ((y_min + y_max) / 2) / new_h
-        width = (x_max - x_min) / new_w
-        height = (y_max - y_min) / new_h
-
-        # 조정된 라벨이 유효한 경우에만 추가
-        if 0 < x_center < 1 and 0 < y_center < 1 and width > 0 and height > 0:
-            adjusted_labels.append(f"{class_id} {x_center} {y_center} {width} {height}\n")
-
-    return adjusted_labels
-
-
-def crop_and_cover(image, label_data):
-    w, h = image.size
-    crop_x = random.randint(0, w // 4)
-    crop_y = random.randint(0, h // 4)
-    is_crop = random.random() > 0.5
-    is_cover = not is_crop
-
-    if is_crop:
-        # 이미지 잘림 적용
-        image = image.crop((crop_x, crop_y, w - crop_x, h - crop_y))
-    else:
-        # 이미지 가림 적용
-        cover = Image.new('L', (crop_x, crop_y), 'black')
-        cover_x, cover_y = random.randint(0, w - crop_x), random.randint(0, h - crop_y)
-        image.paste(cover, (cover_x, cover_y))
-
-    adjusted_labels = adjust_labels_for_crop_and_cover(label_data, crop_x, crop_y, w, h, is_crop, is_cover)
-    return image, adjusted_labels
-
-
 if __name__ == '__main__':
     train_dir = 'train'
     output_image_folder = 'pretreated_/images'
@@ -140,7 +117,7 @@ if __name__ == '__main__':
             augment_and_save(image_path, label_path, output_image_folder, output_label_folder, True, False)
 
             # 선택적으로 노이즈 적용
-            if random.random() > 0.5:
+            if random.random() > 0.2:
                 augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True)
 
     # 8:2 비율로 train, val 분리
@@ -148,7 +125,6 @@ if __name__ == '__main__':
     labels = [f.replace('.jpg', '.txt') for f in images]
     train_images, val_images, train_labels, val_labels = train_test_split(images, labels, test_size=0.2)
 
-    # 훈련 및 검증 데이터셋 폴더 생성
     train_image_folder = 'new_dataset/images/train'
     val_image_folder = 'new_dataset/images/val'
     os.makedirs(train_image_folder, exist_ok=True)
@@ -164,4 +140,4 @@ if __name__ == '__main__':
         shutil.move(os.path.join(output_image_folder, img), val_image_folder)
         shutil.move(os.path.join(output_label_folder, lbl), val_image_folder)
 
-    print("Dataset separation and moving completed.")
+    print("Dataset preparation completed.")
