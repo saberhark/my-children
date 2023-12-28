@@ -43,10 +43,35 @@ def cover_object_and_adjust_labels(image, label_data, cover_ratio=0.3):
     return image, label_data  # 라벨 데이터는 변경 없이 반환
 
 
+# 가로로 일부분 잘라내는 효과?
+def crop_object_and_adjust_labels(image, label_data, cover_ratio=0.3):
+    w, h = image.size
+
+    for label in label_data:
+        parts = label.strip().split()
+        class_id, x_center, y_center, width, height = map(float, parts)
+
+        x_min = int((x_center - width / 2) * w)
+        y_min = int((y_center - height / 2) * h)
+        x_max = int((x_center + width / 2) * w)
+        y_max = int((y_center + height / 2) * h)
+
+        cover_width = int(width * w * 1.0)
+        cover_height = int(height * h * cover_ratio)
+
+        cover_y_range = int(height * h * 0.10)  # 객체 높이의 15%
+        cover_y = random.randint(y_max - cover_height - cover_y_range, y_max - cover_height)
+        cover_x = x_min
+
+        # 이미지에 커버 노이즈 적용
+        cover = Image.new('L', (cover_width, cover_height), 'black')
+        image.paste(cover, (cover_x, cover_y))
+
+    return image, label_data  # 라벨 데이터는 변경 없이 반환
 
 
 # 이미지 증강
-def augment_and_save(image_path, label_path, output_image_folder, output_label_folder, is_mirror, is_noisy, ratio=0.3):
+def augment_and_save(image_path, label_path, output_image_folder, output_label_folder, is_mirror, is_cover, is_crop, ratio=0.3):
     # 이미지 불러오기 및 그레이스케일 변환
     image = Image.open(image_path).convert('L')
     label_data = open(label_path, 'r').readlines()
@@ -59,10 +84,17 @@ def augment_and_save(image_path, label_path, output_image_folder, output_label_f
         image = ImageOps.mirror(image)
         label_data = mirror_label(label_data)
 
-    # 잘림 및 가림 적용
-    if is_noisy:
-        suffix += '_noisy_'+ str(ratio)
+    # 가림 적용
+    if is_cover:
+        suffix += '_noisy_cover_'+str(ratio)
         image, label_data = cover_object_and_adjust_labels(image, label_data, ratio)
+
+
+    # 잘림 적용
+    if is_crop:
+        suffix += '_noisy_crop_'+str(ratio)
+        image, label_data = crop_object_and_adjust_labels(image, label_data, ratio)
+
 
     # 이미지 및 라벨 저장
     # 변경된 이미지 및 라벨 저장
@@ -100,16 +132,22 @@ if __name__ == '__main__':
             label_path = image_path.replace('.jpg', '.txt')
 
             # 그레이스케일 저장
-            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, False)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, False, False)
 
             # 좌우 대칭 저장
-            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, True, False)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, True, False, False)
 
             # 선택적으로 노이즈 적용
-            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.3)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, False, 0.3)
             #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.3)
             #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.4)
-            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.5)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, False, 0.5)
+
+            # 선택적으로 노이즈 적용
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, False, True, 0.3)
+            #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.3)
+            #augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, True, 0.4)
+            augment_and_save(image_path, label_path, output_image_folder, output_label_folder, False, False, True, 0.5)
 
     # 8:2 비율로 train, val 분리
     images = [f for f in os.listdir(output_image_folder) if f.endswith('.jpg')]

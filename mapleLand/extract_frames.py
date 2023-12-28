@@ -32,6 +32,6 @@ def extract_frames(video_path, output_dir, num_frames=30, skip_seconds=0, scale=
     cap.release()
 
 # 프레임 추출 실행
-video_path = r"C:\Users\Hwang\Videos\Captures\MapleStory Worlds-Mapleland 2023-12-23 02-01-12.mp4"
+video_path = r"C:\Users\Hwang\Videos\Captures\MapleStory Worlds-Mapleland 2023-12-23 22-32-58.mp4"
 output_dir = "./frame/"
 extract_frames(video_path, output_dir, scale=1)  # 프레임 크기를 50%로 조정

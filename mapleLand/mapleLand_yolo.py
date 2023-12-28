@@ -1,10 +1,10 @@
 '''
 conda env list
 activate yolov5-new
-python mapleLand_yolo.py
+python ../mapleLand/mapleLand_yolo.py
 
 python train.py --img 640 --batch 8 --epochs 100 --data my_dataset.yaml --weights yolov5s.pt --cache
-python train.py --img 640 --batch 8 --epochs 100 --data my_dataset.yaml --weights yolov5s.pt --cache --save-period 10
+python train.py --img 640 --batch 8 --epochs 200 --data my_dataset.yaml --weights yolov5s.pt --cache --save-period 50
 
 '''
 
