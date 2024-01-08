@@ -1,8 +1,11 @@
 import tkinter as tk
+
 from PIL import ImageTk, Image
 import threading
+import detection as dl  # 별도 파일로 분리된 탐지 로직
+import logic
+
 import time
-import detection_logic as dl  # 별도 파일로 분리된 탐지 로직
 
 # 캔버스와 로그 영역의 크기 설정
 canvas_width = 800
@@ -76,6 +79,7 @@ def start_detection():
     """ 색상 탐지를 시작하는 함수 """
     global detecting
     detecting = True
+    time.sleep(3)
 
 
 def pause_detection():
@@ -86,14 +90,40 @@ def pause_detection():
 
 def update_image():
     global reference_point
+    prev_pos = None
+    last_frame_time = time.time()
 
     """ 화면을 주기적으로 캡처하고 색상을 감지하는 함수 """
     while True:
         if selected_area and detecting:
-            screenshot, pos = dl.detect_colors(selected_area, reference_point, reference_point2)
+            current_time = time.time()
+            time_delta = current_time - last_frame_time
+            last_frame_time = current_time
+
+            if time_delta > 0:
+                fps = 1.0/time_delta
+                update_fps_display(fps)
+
+            screenshot, pos, closest_gray, closest_red = dl.detect_colors(selected_area, reference_point, reference_point2)
+
+            if pos:
+                prev_pos = pos
+            else:
+                pos = prev_pos
+
+            if prev_pos:
+                logic.character_move(selected_area, reference_point, reference_point2, pos, closest_gray, closest_red)
+
+
             screenshot = screenshot.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
             update_canvas(screenshot)
             log_positions(pos)
+
+
+def update_fps_display(fps):
+    # FPS 값을 표시할 라벨 위젯 추가
+    # 라벨이 이미 있다면, 값을 업데이트만 합니다.
+    fps_label.config(text=f"FPS: {fps:.2f}")
 
 
 def update_canvas(image):
@@ -132,13 +162,14 @@ start_button = tk.Button(log_frame, text="시작", command=start_detection)
 pause_button = tk.Button(log_frame, text="일시정지", command=pause_detection)
 reference_button = tk.Button(log_frame, text="기준점1(수평)", command=set_reference_point)
 reference_button2 = tk.Button(log_frame, text="기준점2(수직)", command=set_reference_point2)
-
+fps_label = tk.Label(log_frame, text="FPS: 0.00")
 
 select_area_button.pack(side=tk.LEFT)
 start_button.pack(side=tk.LEFT)
 pause_button.pack(side=tk.LEFT)
 reference_button.pack(side=tk.LEFT)
 reference_button2.pack(side=tk.LEFT)
+fps_label.pack(side=tk.LEFT)
 
 # 스크린샷 및 업데이트 스레드 시작
 thread = threading.Thread(target=update_image, daemon=True)
