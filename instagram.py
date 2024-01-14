@@ -1,11 +1,9 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
-import re
-import pandas as pd
-from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager
 
 # 함수 정의: 검색어 조건에 따른 url 생성
 def insta_searching(word):
@@ -89,7 +87,8 @@ target 변수에 크롤링할 게시글의 수를 바인딩
 
 def open_chrome():
     # 크롬 브라우저 열기
-    driver = webdriver.Chrome('chromedriver.exe')
+    # Selenium WebDriver 설정
+    driver = webdriver.Chrome(ChromeDriverManager().install())
     driver.get('https://www.instagram.com')
     return driver
 
