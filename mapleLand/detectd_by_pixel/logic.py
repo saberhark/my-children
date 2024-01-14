@@ -6,8 +6,9 @@ class KeyboardState:
         self.keys = {'left': False,
                      'right': False,
                      'up': False,
+                     'down': False,
                      's': False,
-                     'z': False,
+                     'd': False,
                      'f': False,
                      'space': False
                      }
@@ -18,7 +19,6 @@ class KeyboardState:
             self.keys[key] = True
 
     def key_up(self, key):
-        if self.keys[key]:
             keyboard.release(key)
             self.keys[key] = False
 
@@ -39,22 +39,22 @@ def character_move(selected_area, reference_point, reference_point2, pos, closes
     # 1층에 있는 경우
     if reference_y < pos[1]:
         # 공격 먼저
-        if attack(pos, closest_gray, closest_red):
+        if attack(pos, closest_gray, closest_red, 1):
             pass
         elif pos[0] > reference_x:
             keyboard_state.key_up('right')
             keyboard_state.key_down('left')
-            keyboard_state.key_down('z')
             keyboard_state.key_up('up')
-            if reference_x + 150 > pos[0] > reference_x - 150:
-                keyboard_state.key_down('up')
+            keyboard_state.key_up('down')
+            keyboard_state.key_up('d')
         else:
             keyboard_state.key_up('left')
             keyboard_state.key_down('right')
-            keyboard_state.key_down('z')
             keyboard_state.key_up('up')
-            if reference_x + 150 > pos[0] > reference_x - 150:
-                keyboard_state.key_down('up')
+            keyboard_state.key_up('down')
+            keyboard_state.key_up('d')
+        if reference_x + 150 > pos[0] > reference_x - 150:
+            keyboard_state.key_down('up')
 
     # 줄을 올라가는 도중 혹은, 2층
     else:
@@ -63,22 +63,25 @@ def character_move(selected_area, reference_point, reference_point2, pos, closes
             keyboard_state.key_up('left')
             keyboard_state.key_up('s')
             keyboard_state.key_up('f')
-            keyboard_state.key_down('z')
             keyboard_state.key_down('up')
             keyboard_state.key_down('right')
+
+            keyboard_state.key_up('down')
+            keyboard_state.key_up('d')
         else:
             # 공격 먼저
-            if attack(pos, closest_gray, closest_red):
+            if attack(pos, closest_gray, closest_red, 2):
                 pass
             else:
                 keyboard_state.key_up('left')
                 keyboard_state.key_up('up')
-                keyboard_state.key_down('z')
                 keyboard_state.key_down('right')
-
+                if selected_area[3] - 200 < pos[0]:
+                    keyboard_state.key_down('down')
+                    keyboard_state.key_down('d')
 
 # 공격하면 True 리턴
-def attack(pos, closest_gray, closest_red):
+def attack(pos, closest_gray, closest_red, floor):
     # 선 루팡
     if gray_valid_area(pos, closest_gray):
         keyboard_state.release_all_keys()
@@ -100,7 +103,6 @@ def attack(pos, closest_gray, closest_red):
     return True
 
 
-
 def gray_valid_area(pos, closest_gray):
     # pos와 각 몬스터가 유효 거리내면 TRUE 반환
     pos_x = pos[0]
@@ -120,6 +122,6 @@ def red_valid_area(pos, closest_red):
 
     if not closest_red:
         return False
-    if pos_x + 300 > closest_red[0] > pos_x - 300 and pos_y + 100 > closest_red[1] > pos_y - 100:
+    if pos_x + 300 > closest_red[0] > pos_x - 300 and pos_y + 100 > closest_red[1] > pos_y - 22:
         return True
     return False
