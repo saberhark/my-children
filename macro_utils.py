@@ -47,3 +47,8 @@ def search_with_dict(path, dic, flags, check=None):
     pyautogui.click(loc)
 
     return True, dic[flag]
+
+def click_img2(img_path, confidence = 0.9):
+    find = pyautogui.locateOnScreen(img_path, confidence=confidence);
+    if find:
+        pyautogui.click(find)
