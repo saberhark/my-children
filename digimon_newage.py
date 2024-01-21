@@ -7,19 +7,29 @@ global path
 path = './new_age/'
 
 
-def real_time_pvp():
+def real_time_pvp(derank=False):
     print("실시간 대전 시작")
     cnt = 1;
     while True:
         # ai 전투
         print("반복 횟수 >>", cnt);
         loc = find_img(path+'realtime_pvp.png')[0]
-        time.sleep(2)
+        time.sleep(1)
         pyautogui.click(loc)
 
-        loc = find_img(path + 'realtime_auto.png', confidence=0.5)[0]
-        time.sleep(4)
-        pyautogui.click(loc)
+        if(derank):
+            loc = find_img(path + 'setting.png', confidence=0.8)[0]
+            time.sleep(1)
+            pyautogui.click(loc)
+
+            loc = find_img(path + 'surrend.png', confidence=0.8)[0]
+            time.sleep(1)
+            pyautogui.click(loc)
+
+        else:
+            loc = find_img(path + 'realtime_auto.png', confidence=0.5)[0]
+            time.sleep(4)
+            pyautogui.click(loc)
 
         find_img(path + 'end_realtime.png')[0]
         print('end')
@@ -76,16 +86,16 @@ def three_pvp(total=10, skip=0):
 def capsule():
     while True:
         start_btn1 = find_img(path + "capsule_start1.PNG")[0]
-        time.sleep(1)
+        time.sleep(3)
         pyautogui.click(start_btn1)
 
         start_btn2 = find_img(path + "capsule_start2.PNG", confidence=0.5)[0]
-        time.sleep(0.5)
+        time.sleep(1)
         pyautogui.click(start_btn2)
 
         end_btn = find_img(path + "capsule_end.PNG", confidence=0.8)[0]
-        time.sleep(0.5)
-        pyautogui.click(end_btn)
+        time.sleep(1)
+        pyautogui.click(900, 720)
 
         #end_btn2 = find_img(path + "capsule_end2.PNG", confidence=0.8)[0]
         time.sleep(6)
@@ -130,9 +140,33 @@ def story():
 
         print('반복 횟수  >>', cnt)
 
-#real_time_pvp()
+def coop():
+    while True:
+        click_img2(path + "coop_start.PNG")
+        click_img2(path + "one_pvp_skip.PNG", confidence=0.8)
+        click_img2(path + "story_end.PNG", confidence=0.8)
+
+
+
+def coop1():
+    while True:
+        click_img2(path + "story_start2.PNG")
+        click_img2(path + "story_skip.PNG", confidence=0.8)
+        click_img2(path + "event_start.PNG", confidence=0.8)
+
+        loc = pyautogui.locateOnScreen(path + 'capsule_end.png', confidence=0.8)
+        if loc:
+            pyautogui.click(900, 720)
+
+
+
+
+real_time_pvp()
+#real_time_pvp(True)
 #story()
 #capsule()
 
-one_pvp(next=True)
+#coop()
+#coop1()
+#one_pvp(next=True)
 #three_pvp(total=8)
