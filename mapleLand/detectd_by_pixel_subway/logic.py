@@ -49,7 +49,8 @@ def character_move(character_pos, gray_positions, right_flag, left_flag, middle_
             pause()
             keyboard_state.key_down('left')
             keyboard_state.key_down('space')
-            pause(2)
+            keyboard_state.key_down('f')
+            pause(20)
             right_flag = True
             left_flag = False
 
@@ -58,9 +59,9 @@ def character_move(character_pos, gray_positions, right_flag, left_flag, middle_
             keyboard_state.key_down('space')
             pause()
             keyboard_state.key_down('f')
-            pause(4)
+            pause(2)
         else:
-            keyboard_state.key_up('space')
+            keyboard_state.key_down('space')
             keyboard_state.key_up('f')
 
     # 오른쪽에서 왼쪽으로
@@ -69,7 +70,7 @@ def character_move(character_pos, gray_positions, right_flag, left_flag, middle_
         if gray_valid_area(character_pos, gray_positions):
             keyboard_state.release_all_keys()
             keyboard_state.key_down('f')
-            pause(8)
+            pause(2)
             return right_flag, left_flag, middle_flag
         else:
             keyboard_state.key_up('f')

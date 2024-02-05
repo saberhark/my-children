@@ -57,8 +57,7 @@ def update_image():
     if not selected_area:
         selected_area = get_maplestory_window()
 
-
-    prev_pos = None
+    prev_character_pos = None
     last_frame_time = time.time()
     global right_flag
     global left_flag
@@ -76,16 +75,9 @@ def update_image():
                 fps = 1.0/time_delta
                 update_fps_display(fps)
 
-            screenshot, character_pos, gray_positions, mini_map_me, mini_map_portal = dl.detect_colors(selected_area)
+            screenshot, positions = dl.detect_colors(selected_area)
 
-            if character_pos:
-                prev_pos = character_pos
-            else:
-                character_pos = prev_pos
-
-            if prev_pos:
-                right_flag, left_flag, middle_flag = logic.character_move(character_pos, gray_positions, right_flag, left_flag, middle_flag, mini_map_me, mini_map_portal)
-                pass
+            logic.character_move(prev_character_pos, positions)
 
             if not init:
                 screenshot = screenshot.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
