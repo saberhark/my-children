@@ -17,9 +17,8 @@ log_height = 100
 # 사용자가 선택한 영역과 탐지 상태 플래그
 selected_area = None
 detecting = False
-right_flag = False
-left_flag = True
-middle_flag = False
+state = 'right'
+flag = True
 
 def get_maplestory_window():
     """ 'MapleStory Worlds-Mapleland' 창의 위치와 크기를 반환하는 함수 """
@@ -59,9 +58,7 @@ def update_image():
 
     prev_character_pos = None
     last_frame_time = time.time()
-    global right_flag
-    global left_flag
-    global middle_flag
+    global state
     init = False
 
     """ 화면을 주기적으로 캡처하고 색상을 감지하는 함수 """
@@ -77,7 +74,8 @@ def update_image():
 
             screenshot, positions = dl.detect_colors(selected_area)
 
-            logic.character_move(prev_character_pos, positions)
+            prev_character_pos, state = logic.character_move_2f(prev_character_pos, positions, state)
+            #prev_character_pos, state = logic.character_move(prev_character_pos, positions, flag)
 
             if not init:
                 screenshot = screenshot.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)

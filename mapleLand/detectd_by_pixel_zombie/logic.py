@@ -35,45 +35,178 @@ class KeyboardState:
 keyboard_state = KeyboardState()
 
 
-def character_move(me, positions):
+def character_move(me, positions, flag):
+    mini_map_me = positions["mini_map_me"][0]
+    y_coord = mini_map_me[1]
+
+    # 3층 꼭대기 (리젠되는곳)
+    if y_coord < 150:
+        jump_down()
+
+    # 중간층
+    elif 176 < y_coord < 180:
+        jump_down()
+
+    # 2층
+    elif 160 < y_coord < 170:
+        keyboard_state.key_down('right')
+
+    # 1층 (바닥)
+    elif 190 < y_coord:
+        pass
+
     if positions.get("me"):
         me = positions["me"]
     elif not me:
         return
 
-    zombie = positions["zombie"]
-    mini_map_me = positions["mini_map_me"]
-
-    return me
+    return me, flag
 
 
-# 텔레포트는 오른쪽으로만 씀
-def gray_valid_area_teleport(character_pos, gray_positions, teleport):
-    # pos와 각 몬스터가 유효 거리내면 TRUE 반환
-    pos_x = character_pos[0] + teleport
-    pos_y = character_pos[1]
+'''
+2층
+x: 96 ~ 191
+y: 163 ~ 168
 
-    for pos in gray_positions:
-        if pos_x + 180 > pos[0] > pos_x - 50 \
-                and pos_y + 150 > pos[1] > pos_y - 50:
-            return True
+밧줄 x : 114, 175
+'''
+def character_move_2f(me, positions, state):
+    mini_map_me = positions["mini_map_me"][0]
+    print(mini_map_me)
+
+    # 케릭터 좌표 세팅
+    if positions.get("me"):
+        me = positions["me"][0]
+    elif not me:
+        return None, None
+
+    # x 좌표
+    x_coord = mini_map_me[0]
+
+    if attack(positions, me):
+        keyboard_state.release_all_keys()
+        pause()
+        keyboard_state.key_down('f')
+        time.sleep(0.25)
+        pause()
+        keyboard_state.release_all_keys()
+        pause()
+
+        return me, state
+
+    # 114에 도착했거나 더 왼쪽에 있을 경우, 오른쪽으로 이동해야 함
+    if x_coord <= 114 and state != 'right':
+        state = 'right'
+        keyboard_state.key_up('left')
+        pause()
+        keyboard_state.key_down('right')
+
+    # 175에 도착했거나 더 오른쪽에 있을 경우, 왼쪽으로 이동해야 함
+    elif x_coord >= 175 and state != 'left':
+        state = 'left'
+        keyboard_state.key_up('right')
+        pause()
+        keyboard_state.key_down('left')
+
+    # 현재 상태에 따라 캐릭터 움직임 결정
+    else:
+        if state == 'right':
+            keyboard_state.key_up('left')
+            pause()
+            keyboard_state.key_down('right')
+        elif state == 'left':
+            keyboard_state.key_up('right')
+            pause()
+            keyboard_state.key_down('left')
+    return me, state
+
+
+def attack(positions, me):
+    """좀비가 캐릭터와 x 좌표 기준으로 180 이내에 있는지 검사하는 함수"""
+    if 'zombie' in positions:
+        char_x = me[0]  # 캐릭터의 x 좌표
+        for zombie_pos in positions['zombie']:
+            if abs(zombie_pos[0] - char_x) <= 130:
+                return True
     return False
 
 
-def gray_valid_area(character_pos, gray_positions):
-    # pos와 각 몬스터가 유효 거리내면 TRUE 반환
-    pos_x = character_pos[0]
-    pos_y = character_pos[1]
-    for pos in gray_positions:
-        if pos_x + 180 > pos[0] > pos_x - 180 \
-                and pos_y + 150 > pos[1] > pos_y - 50:
-            return True
-    return False
+
+
+
+# 밧줄타기
+def move_up(direction, x_coord):
+    # 114와 175와의 거리 계산
+    distance_to_114 = abs(114 - x_coord)
+    distance_to_175 = abs(175 - x_coord)
+    direction = None
+
+    if distance_to_114 <= distance_to_175 and x_coord >= 114:
+        direction = "left"
+        state = "left_lope"
+    elif distance_to_114 <= distance_to_175 and x_coord <= 114:
+        direction = "right"
+        state = "right_lope"
+    elif distance_to_114 >= distance_to_175 and x_coord >= 175:
+        direction = "left"
+        state = "left_lope"
+    elif distance_to_114 >= distance_to_175 and x_coord <= 175:
+        direction = "right"
+        state = "right_lope"
+
+    keyboard_state.release_all_keys()
+    pause()
+    keyboard_state.key_down(direction)
+    pause()
+    keyboard_state.key_down("up")
+    pause()
+    return
+
+
+# 밑점
+def jump_down():
+    keyboard_state.release_all_keys()
+    pause()
+    keyboard_state.key_down("down")
+    pause()
+    keyboard_state.key_down("d")
+    pause()
+    keyboard_state.release_all_keys()
+
+
+# 움직이면서 힐
+def jump_heal(direction):
+    keyboard_state.release_all_keys()
+    pause()
+    keyboard_state.key_down(direction)
+    pause()
+    keyboard_state.key_down("d")
+    pause()
+    keyboard_state.key_down("f")
+    pause()
+    keyboard_state.release_all_keys()
+    time.sleep(0.5)
+    pause()
+
+
+# 힐 텔포
+def teleport_heal(direction):
+    keyboard_state.release_all_keys()
+    pause()
+    keyboard_state.key_down(direction)
+    pause()
+    keyboard_state.key_down("space")
+    pause()
+    keyboard_state.key_down("f")
+    pause()
+    keyboard_state.release_all_keys()
+    time.sleep(0.5)
+    pause()
 
 
 def pause(iterate=1):
     for i in range(iterate):
-        random_sleep_time = random.uniform(0.04, 0.06)
+        random_sleep_time = random.uniform(0.01, 0.03)
         time.sleep(random_sleep_time)
 
 
