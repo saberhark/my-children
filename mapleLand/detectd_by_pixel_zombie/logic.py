@@ -25,9 +25,11 @@ class KeyboardState:
             keyboard.release(key)
             self.keys[key] = False
 
-    def release_all_keys(self):
+    def release_all_keys(self, ignore_keys=None):
+        if ignore_keys is None:
+            ignore_keys = []
         for key in self.keys:
-            if self.keys[key]:
+            if self.keys[key] and key not in ignore_keys:
                 keyboard.release(key)
                 self.keys[key] = False
 
@@ -35,36 +37,104 @@ class KeyboardState:
 keyboard_state = KeyboardState()
 
 
+# 1층 2층
 def character_move(me, positions, flag):
     mini_map_me = positions["mini_map_me"][0]
+    print(mini_map_me, flag)
+    x_coord = mini_map_me[0]
     y_coord = mini_map_me[1]
 
+    # 케릭터 좌표 세팅
+    if positions.get("me"):
+        me = positions["me"][0]
+    elif not me:
+        return me, flag
+
+    if attack(positions, me):
+        keyboard_state.release_all_keys(['f', 'up'])
+        pause()
+        keyboard_state.key_down('f')
+
+        return me, flag
+
+    # 2층 가야됨
+    if flag:
+        if 100 < x_coord and y_coord < 164:
+            flag = False
+            return me, flag
+
+        if 100 <= x_coord <= 114:
+            keyboard_state.release_all_keys(['right', 'up'])
+            pause()
+            keyboard_state.key_down('right')
+            pause()
+            keyboard_state.key_down('up')
+            pause()
+            return me, flag
+        elif 114 < x_coord:
+            keyboard_state.release_all_keys(['left', 'up'])
+            pause()
+            keyboard_state.key_down('left')
+            pause()
+            keyboard_state.key_down('up')
+            pause()
+            return me, flag
     # 3층 꼭대기 (리젠되는곳)
-    if y_coord < 150:
+    if y_coord < 150 and x_coord < 100:
         jump_down()
+        flag = True
 
     # 중간층
-    elif 176 < y_coord < 180:
+    elif 176 < y_coord < 180 and x_coord < 100:
         jump_down()
+        keyboard_state.key_down('f')
+        time.sleep(0.5)
+        pause()
 
     # 2층
     elif 160 < y_coord < 170:
-        keyboard_state.key_down('right')
+        if x_coord < 170:
+            keyboard_state.release_all_keys(['right', 'space'])
+            pause()
+            keyboard_state.key_down('right')
+            keyboard_state.key_down('space')
+        # 왼쪽으로 잠깐 왔다가 밑으로 점프
+        else:
+            keyboard_state.key_up('right')
+            pause()
+            keyboard_state.key_down('left')
+            pause()
+            keyboard_state.key_down('space')
+            time.sleep(1)
+            pause()
+            keyboard_state.key_down('down')
+            pause()
+            keyboard_state.key_down('d')
+            pause()
+            time.sleep(0.7)
+
 
     # 1층 (바닥)
     elif 190 < y_coord:
-        pass
-
-    if positions.get("me"):
-        me = positions["me"]
-    elif not me:
-        return
+        if x_coord > 200:
+            keyboard_state.key_up('f')
+        keyboard_state.release_all_keys(['right', 'space', 'f'])
+        pause()
+        #if x_coord <200:
+        #    keyboard_state.key_down('f')
+        #    pause()
+        keyboard_state.key_down('right')
+        pause()
+        keyboard_state.key_down('space')
+        pause()
+        time.sleep(0.5)
+        pause()
 
     return me, flag
 
 
 '''
-2층
+2층만
 x: 96 ~ 191
 y: 163 ~ 168
 
@@ -125,13 +195,11 @@ def attack(positions, me):
     """좀비가 캐릭터와 x 좌표 기준으로 180 이내에 있는지 검사하는 함수"""
     if 'zombie' in positions:
         char_x = me[0]  # 캐릭터의 x 좌표
+        char_y = me[1]  # 캐릭터의 x 좌표
         for zombie_pos in positions['zombie']:
-            if abs(zombie_pos[0] - char_x) <= 130:
+            if abs(zombie_pos[0] - char_x) <= 150 and abs(zombie_pos[1] - char_y) <= 130:
                 return True
     return False
-
-
-
 
 
 # 밧줄타기
@@ -167,9 +235,12 @@ def move_up(direction, x_coord):
 def jump_down():
     keyboard_state.release_all_keys()
     pause()
+    keyboard_state.key_down("left")
+    pause()
     keyboard_state.key_down("down")
     pause()
     keyboard_state.key_down("d")
+    time.sleep(0.9)
     pause()
     keyboard_state.release_all_keys()
 
