@@ -2,12 +2,13 @@ import tkinter as tk
 
 from PIL import ImageTk, Image
 import threading
-import detection as dl  # 별도 파일로 분리된 탐지 로직
 import logic
 import pygetwindow as gw
 from datetime import datetime
 
 import time
+
+from mapleLand.utils.detect_colors import detect_colors
 
 # 캔버스와 로그 영역의 크기 설정
 canvas_width = 800
@@ -18,7 +19,8 @@ log_height = 100
 selected_area = None
 detecting = False
 state = 'right'
-flag = False
+flag = 'right'
+cnt = 0
 
 def get_maplestory_window():
     """ 'MapleStory Worlds-Mapleland' 창의 위치와 크기를 반환하는 함수 """
@@ -60,6 +62,7 @@ def update_image():
     last_frame_time = time.time()
     global state
     global flag
+    global cnt
     init = False
 
     """ 화면을 주기적으로 캡처하고 색상을 감지하는 함수 """
@@ -73,11 +76,9 @@ def update_image():
                 fps = 1.0/time_delta
                 update_fps_display(fps)
 
-            screenshot, positions = dl.detect_colors(selected_area)
+            screenshot, positions = detect_colors(selected_area)
 
-            #prev_character_pos, state = logic.character_move_2f(prev_character_pos, positions, state)
-            prev_character_pos, flag = logic.character_move(prev_character_pos, positions, flag)
-            #prev_character_pos, state = logic.character_move(prev_character_pos, positions, flag)
+            prev_character_pos, state, flag, cnt = logic.character_move(prev_character_pos, positions, state, flag, cnt)
 
             if not init:
                 screenshot = screenshot.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)

@@ -18,7 +18,7 @@ log_height = 100
 selected_area = None
 detecting = False
 state = 'right'
-flag = False
+flag = 'right'
 
 def get_maplestory_window():
     """ 'MapleStory Worlds-Mapleland' 창의 위치와 크기를 반환하는 함수 """
@@ -75,9 +75,7 @@ def update_image():
 
             screenshot, positions = dl.detect_colors(selected_area)
 
-            #prev_character_pos, state = logic.character_move_2f(prev_character_pos, positions, state)
-            prev_character_pos, flag = logic.character_move(prev_character_pos, positions, flag)
-            #prev_character_pos, state = logic.character_move(prev_character_pos, positions, flag)
+            prev_character_pos, state = logic.auto_horn(prev_character_pos, positions, state)
 
             if not init:
                 screenshot = screenshot.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)

@@ -22,6 +22,7 @@ character_position = None
 prev_position = None
 detecting = False  # 탐지 상태를 나타내는 플래그
 
+
 # 마우스 이벤트를 처리하는 함수
 def on_click(event):
     global capture_area, selection_window
@@ -34,6 +35,7 @@ def on_click(event):
         capture_area = [min(x1, x2), min(y1, y2), max(x2, x1), max(y1, y2)]
         print(f"Selected area: {capture_area}")
         selection_window.destroy()
+
 
 # "영역 선택" 버튼 클릭 시 실행되는 함수
 def select_area():

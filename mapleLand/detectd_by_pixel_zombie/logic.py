@@ -71,10 +71,20 @@ def character_move(me, positions, flag):
             keyboard_state.key_down('up')
             pause()
             return me, flag
-        elif 114 < x_coord:
+        elif 114 < x_coord < 136:
             keyboard_state.release_all_keys(['left', 'up'])
             pause()
             keyboard_state.key_down('left')
+            pause()
+            keyboard_state.key_down('up')
+            pause()
+            return me, flag
+        elif 136 <= x_coord:
+            keyboard_state.release_all_keys(['left', 'up'])
+            pause()
+            keyboard_state.key_down('left')
+            pause()
+            keyboard_state.key_down('space')
             pause()
             keyboard_state.key_down('up')
             pause()
@@ -111,7 +121,7 @@ def character_move(me, positions, flag):
             pause()
             keyboard_state.key_down('d')
             pause()
-            time.sleep(0.7)
+            time.sleep(1.2)
 
 
     # 1층 (바닥)

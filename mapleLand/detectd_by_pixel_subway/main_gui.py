@@ -2,7 +2,9 @@ import tkinter as tk
 
 from PIL import ImageTk, Image
 import threading
-import detection as dl  # 별도 파일로 분리된 탐지 로직
+#import detection as dl  # 별도 파일로 분리된 탐지 로직
+from mapleLand.utils.detect_colors import detect_colors
+
 import logic
 import pygetwindow as gw
 from datetime import datetime
@@ -76,10 +78,20 @@ def update_image():
                 fps = 1.0/time_delta
                 update_fps_display(fps)
 
-            screenshot, character_pos, gray_positions, mini_map_me, mini_map_portal = dl.detect_colors(selected_area)
+            #screenshot, character_pos, gray_positions, mini_map_me, mini_map_portal = dl.detect_colors(selected_area)
+            screenshot, positions = detect_colors(selected_area)
+
+            character_pos = positions.get("me")
+            gray_positions = positions.get("wraith")
+            mini_map_me = positions.get("mini_map_me")[0]
+            mini_map_portal = positions.get("mini_map_portal")
+
+            if not gray_positions:
+                gray_positions = []
 
             if character_pos:
-                prev_pos = character_pos
+                prev_pos = character_pos[0]
+                character_pos = character_pos[0]
             else:
                 character_pos = prev_pos
 

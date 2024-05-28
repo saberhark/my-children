@@ -83,6 +83,7 @@ def character_move(character_pos, gray_positions, right_flag, left_flag, middle_
             keyboard_state.key_down('left')
 
             if mini_map_portal:
+                mini_map_portal= mini_map_portal[0]
                 if mini_map_portal[0]+120 < mini_map_me[0] < mini_map_portal[0] + 130 \
                         and 170 < mini_map_me[1] < 178:
                     print("중간")
