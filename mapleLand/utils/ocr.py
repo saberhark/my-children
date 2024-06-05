@@ -1,11 +1,14 @@
 import numpy as np
 import cv2
 from PIL import ImageGrab
-import pytesseract
+import easyocr
 import time
 
-# pytesseract 실행 파일 경로 설정
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Tesseract의 설치 경로에 맞게 조정해야 함
+# EasyOCR 리더 객체 생성 (한국어)
+try:
+    reader = easyocr.Reader(['ko'])
+except AttributeError:
+    print("Error initializing EasyOCR Reader: Check PyTorch installation and compatibility.")
 
 def screen_capture():
     # 전체 화면 캡처
@@ -16,7 +19,8 @@ def screen_capture():
 
 def ocr_processing(image):
     # OCR을 통해 이미지에서 텍스트 추출
-    text = pytesseract.image_to_string(image, lang='kor+eng')
+    results = reader.readtext(image, detail=0)  # detail=0은 텍스트만 반환
+    text = ' '.join(results)  # 추출된 텍스트를 하나의 문자열로 결합
     return text
 
 def check_text(text, target):
@@ -31,7 +35,7 @@ def main():
         if check_text(extracted_text, target_text):
             print(f"'{target_text}' detected!")
         else:
-            print(f"'{target_text}' not found.")
+            print(extracted_text)
         # 1분 간격으로 반복
         time.sleep(60)
 

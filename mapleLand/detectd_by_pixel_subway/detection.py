@@ -1,4 +1,7 @@
 from PIL import ImageGrab
+import pytesseract
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # 감지할 색상 설정
 target_colors = {
@@ -45,3 +48,10 @@ def detect_colors(selected_area):
     wraiths = find_wraith(positions)
 
     return screenshot, character_pos, wraiths, mini_map_me, mini_map_portal
+
+
+
+def ocr_text_detection(screenshot, lang='kor'):
+    """ 스크린샷에서 OCR을 통해 텍스트를 감지하는 함수 """
+    text = pytesseract.image_to_string(screenshot, lang=lang)
+    return text

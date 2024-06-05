@@ -176,6 +176,7 @@ def periodic_key_press():
         wait_time = random.randint(1200, 1800)  # 1200초(20분)에서 1800초(30분) 사이의 랜덤한 시간
         time.sleep(wait_time)  # 랜덤한 시간만큼 대기
         keyboard.press_and_release('page down')  # 'Page Down' 키 입력
+        keyboard.press_and_release('page up')  # 'Page Down' 키 입력
 
 
 
